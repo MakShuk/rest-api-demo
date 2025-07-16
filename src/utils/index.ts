@@ -5,6 +5,7 @@ export * from './response.utils';
 
 // Export validation utilities
 export * from './validation.utils';
+export * from './validation-helpers.utils';
 
 // Legacy utilities (will be replaced by new ones)
 export const asyncHandler =

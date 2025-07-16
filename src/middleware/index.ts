@@ -4,7 +4,21 @@ export {
   notFoundHandler,
   asyncHandler,
   handleValidationErrors,
+  handleValidationErrorsDetailed,
 } from './error.middleware';
+
+// Validation middleware
+export {
+  validate,
+  conditionalValidate,
+  sanitizeRequest,
+  validateContentType,
+  validateRequestSize,
+  validateRequiredHeaders,
+  customValidate,
+  validateFileUpload,
+  validateApiVersion,
+} from './validation.middleware';
 
 // Logging and security middleware
 export { requestLogger, securityHeaders } from './logger.middleware';

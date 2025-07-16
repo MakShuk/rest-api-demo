@@ -79,23 +79,75 @@ export const notFoundHandler = (
 
 /**
  * Validation error handler
- * Handles express-validator errors
+ * Handles express-validator errors with detailed formatting
  */
 export const handleValidationErrors = (
   req: Request,
-  _res: Response,
+  res: Response,
   next: NextFunction
-): void => {
+) => {
   const { validationResult } = require('express-validator');
   const errors = validationResult(req);
 
   if (!errors.isEmpty()) {
-    const errorMessages = errors
-      .array()
-      .map((error: any) => error.msg)
-      .join(', ');
-    const error = new AppError(`Validation failed: ${errorMessages}`, 400);
-    return next(error);
+    const formattedErrors = errors.array().map((error: any) => ({
+      field: error.path || error.param,
+      message: error.msg,
+      value: error.value,
+      location: error.location,
+    }));
+
+    const errorResponse = {
+      success: false,
+      message: 'Validation failed',
+      errors: formattedErrors,
+      timestamp: new Date().toISOString(),
+    };
+
+    return res.status(400).json(errorResponse);
+  }
+
+  next();
+};
+
+/**
+ * Enhanced validation error handler with custom formatting
+ * Provides more detailed error information for development
+ */
+export const handleValidationErrorsDetailed = (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
+  const { validationResult } = require('express-validator');
+  const errors = validationResult(req);
+
+  if (!errors.isEmpty()) {
+    const errorsByField: Record<string, any[]> = {};
+    const allErrors = errors.array();
+
+    // Group errors by field
+    allErrors.forEach((error: any) => {
+      const field = error.path || error.param || 'unknown';
+      if (!errorsByField[field]) {
+        errorsByField[field] = [];
+      }
+      errorsByField[field].push({
+        message: error.msg,
+        value: error.value,
+        location: error.location,
+      });
+    });
+
+    const errorResponse = {
+      success: false,
+      message: 'Validation failed',
+      errors: errorsByField,
+      totalErrors: allErrors.length,
+      timestamp: new Date().toISOString(),
+    };
+
+    return res.status(400).json(errorResponse);
   }
 
   next();
