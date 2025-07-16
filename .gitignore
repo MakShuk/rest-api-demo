@@ -353,3 +353,5 @@ dump.rdb
 
 # Runtime
 runtime/
+
+/src/generated/prisma

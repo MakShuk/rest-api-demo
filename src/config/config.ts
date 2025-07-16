@@ -15,9 +15,7 @@ interface Config {
 export const config: Config = {
   nodeEnv: process.env['NODE_ENV'] || 'development',
   port: parseInt(process.env['PORT'] || '3000', 10),
-  databaseUrl:
-    process.env['DATABASE_URL'] ||
-    'postgresql://user:password@localhost:5432/rest_api_db',
+  databaseUrl: process.env['DATABASE_URL'] || 'file:./dev.db',
   jwtSecret:
     process.env['JWT_SECRET'] ||
     'your-super-secret-jwt-key-change-in-production',

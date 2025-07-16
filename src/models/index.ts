@@ -1,4 +1,12 @@
-// Models and database related exports will be here
-// This will include Prisma client instance and any custom model methods
-// export { default as prisma } from './prisma';
-// export * from './user.model';
+// Models and database related exports
+export { default as prisma } from './prisma';
+
+// Re-export Prisma types for convenience
+export type {
+  User,
+  Task,
+  Role,
+  Status,
+  TaskStatus,
+  Priority,
+} from '@prisma/client';
