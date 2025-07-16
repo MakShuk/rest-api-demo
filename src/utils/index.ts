@@ -1,8 +1,16 @@
 // Utility functions
 
-export const asyncHandler = (fn: Function) => (req: any, res: any, next: any) => {
-  Promise.resolve(fn(req, res, next)).catch(next);
-};
+// Export response utilities
+export * from './response.utils';
+
+// Export validation utilities
+export * from './validation.utils';
+
+// Legacy utilities (will be replaced by new ones)
+export const asyncHandler =
+  (fn: Function) => (req: any, res: any, next: any) => {
+    Promise.resolve(fn(req, res, next)).catch(next);
+  };
 
 export const generateResponse = <T>(
   success: boolean,
@@ -28,11 +36,11 @@ export const calculateAge = (birthDate: Date): number => {
   const birth = new Date(birthDate);
   let age = today.getFullYear() - birth.getFullYear();
   const monthDiff = today.getMonth() - birth.getMonth();
-  
+
   if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < birth.getDate())) {
     age--;
   }
-  
+
   return age;
 };
 
