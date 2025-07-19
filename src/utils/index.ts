@@ -7,6 +7,9 @@ export * from './response.utils';
 export * from './validation.utils';
 export * from './validation-helpers.utils';
 
+// Export JWT utilities
+export * from './jwt.utils';
+
 // Legacy utilities (will be replaced by new ones)
 export const asyncHandler =
   (fn: Function) => (req: any, res: any, next: any) => {

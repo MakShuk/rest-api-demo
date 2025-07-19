@@ -2,6 +2,12 @@ import { Request, Response, NextFunction } from 'express';
 import { validationResult, ValidationChain } from 'express-validator';
 import { AppError } from '../types/error.types';
 
+// Interface for file upload requests
+interface FileRequest extends Request {
+  file?: any;
+  files?: any[] | { [fieldname: string]: any[] };
+}
+
 /**
  * Middleware to run validation chains and handle errors
  */
@@ -20,7 +26,7 @@ export const validate = (validations: ValidationChain[]) => {
       field: error.path || error.param,
       message: error.msg,
       value: error.value,
-      location: error.location
+      location: error.location,
     }));
 
     const errorResponse = {
@@ -54,7 +60,11 @@ export const conditionalValidate = (
 /**
  * Middleware to sanitize request data after validation
  */
-export const sanitizeRequest = (req: Request, _res: Response, next: NextFunction) => {
+export const sanitizeRequest = (
+  req: Request,
+  _res: Response,
+  next: NextFunction
+) => {
   // Remove undefined and null values from body
   if (req.body && typeof req.body === 'object') {
     Object.keys(req.body).forEach(key => {
@@ -87,7 +97,9 @@ export const sanitizeRequest = (req: Request, _res: Response, next: NextFunction
 /**
  * Middleware to validate request content type
  */
-export const validateContentType = (expectedType: string = 'application/json') => {
+export const validateContentType = (
+  expectedType: string = 'application/json'
+) => {
   return (req: Request, _res: Response, next: NextFunction) => {
     if (req.method === 'GET' || req.method === 'DELETE') {
       return next();
@@ -109,10 +121,11 @@ export const validateContentType = (expectedType: string = 'application/json') =
 /**
  * Middleware to validate request size
  */
-export const validateRequestSize = (maxSize: number = 1024 * 1024) => { // 1MB default
+export const validateRequestSize = (maxSize: number = 1024 * 1024) => {
+  // 1MB default
   return (req: Request, _res: Response, next: NextFunction) => {
     const contentLength = req.get('Content-Length');
-    
+
     if (contentLength && parseInt(contentLength) > maxSize) {
       const error = new AppError(
         `Request too large. Maximum size is ${maxSize} bytes`,
@@ -159,7 +172,7 @@ export const customValidate = (
   return async (req: Request, _res: Response, next: NextFunction) => {
     try {
       const error = await validator(req);
-      
+
       if (error) {
         const appError = new AppError(error, 400);
         return next(appError);
@@ -180,11 +193,15 @@ export const validateFileUpload = (options: {
   allowedTypes?: string[];
   required?: boolean;
 }) => {
-  return (req: Request, _res: Response, next: NextFunction) => {
-    const { maxSize = 5 * 1024 * 1024, allowedTypes = [], required = false } = options;
+  return (req: FileRequest, _res: Response, next: NextFunction) => {
+    const {
+      maxSize = 5 * 1024 * 1024,
+      allowedTypes = [],
+      required = false,
+    } = options;
 
     // Check if file is required
-    if (required && (!req.file && !req.files)) {
+    if (required && !req.file && !req.files) {
       const error = new AppError('File upload is required', 400);
       return next(error);
     }
@@ -194,7 +211,11 @@ export const validateFileUpload = (options: {
       return next();
     }
 
-    const files = req.files ? (Array.isArray(req.files) ? req.files : [req.files]) : [req.file];
+    const files = req.files
+      ? Array.isArray(req.files)
+        ? req.files
+        : [req.files]
+      : [req.file];
 
     for (const file of files) {
       if (!file) continue;
@@ -227,7 +248,7 @@ export const validateFileUpload = (options: {
  */
 export const validateApiVersion = (supportedVersions: string[] = ['v1']) => {
   return (req: Request, _res: Response, next: NextFunction) => {
-    const version = req.get('API-Version') || req.params.version || 'v1';
+    const version = req.get('API-Version') || req.params['version'] || 'v1';
 
     if (!supportedVersions.includes(version)) {
       const error = new AppError(

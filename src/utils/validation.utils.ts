@@ -1,4 +1,4 @@
-import { body, param, query, ValidationChain } from 'express-validator';
+import { body, param, query } from 'express-validator';
 import { PrismaClient } from '@prisma/client';
 
 const prisma = new PrismaClient();
@@ -26,7 +26,6 @@ export const validationRules = {
       if (req['path'] === '/login' && !existingUser) {
         throw new Error('Invalid email or password');
       }
-
       return true;
     }),
 

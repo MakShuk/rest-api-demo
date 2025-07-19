@@ -85,7 +85,7 @@ export const handleValidationErrors = (
   req: Request,
   res: Response,
   next: NextFunction
-) => {
+): void => {
   const { validationResult } = require('express-validator');
   const errors = validationResult(req);
 
@@ -104,7 +104,8 @@ export const handleValidationErrors = (
       timestamp: new Date().toISOString(),
     };
 
-    return res.status(400).json(errorResponse);
+    res.status(400).json(errorResponse);
+    return;
   }
 
   next();
@@ -118,7 +119,7 @@ export const handleValidationErrorsDetailed = (
   req: Request,
   res: Response,
   next: NextFunction
-) => {
+): void => {
   const { validationResult } = require('express-validator');
   const errors = validationResult(req);
 
@@ -147,7 +148,8 @@ export const handleValidationErrorsDetailed = (
       timestamp: new Date().toISOString(),
     };
 
-    return res.status(400).json(errorResponse);
+    res.status(400).json(errorResponse);
+    return;
   }
 
   next();

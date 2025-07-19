@@ -23,6 +23,43 @@ export {
 // Logging and security middleware
 export { requestLogger, securityHeaders } from './logger.middleware';
 
-// Future middleware exports
-// export { default as authMiddleware } from './auth.middleware';
-// export { default as roleMiddleware } from './role.middleware';
+// Authentication and authorization middleware
+export {
+  authenticateToken,
+  optionalAuth,
+  requireRole,
+  requireAdmin,
+  requireUser,
+  requireOwnershipOrAdmin,
+  authAndRole,
+  extractUserIdFromToken,
+  AuthenticatedRequest,
+} from './auth.middleware';
+
+// Security middleware
+export {
+  authRateLimit,
+  apiRateLimit,
+  adminRateLimit,
+  requireActiveUser,
+  canAccessResource,
+  validateApiKey,
+  requireHTTPS,
+  validateOrigin,
+  logSecurityEvent,
+} from './security.middleware';
+
+// Permission-based middleware
+export {
+  Permission,
+  hasPermission,
+  requirePermission,
+  requireAllPermissions,
+  requireAnyPermission,
+  requireResourcePermission,
+  canAccessOwnProfile,
+  canModifyUser,
+  preventAdminModification,
+  getRolePermissions,
+  isValidRole,
+} from './permissions.middleware';
