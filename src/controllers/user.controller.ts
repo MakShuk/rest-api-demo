@@ -8,6 +8,8 @@ import {
   PaginationParams,
 } from '../types';
 import { asyncHandler, AuthenticatedRequest } from '../middleware';
+import { createError, ErrorFactory } from '../utils/error.utils';
+import { sendSuccess } from '../utils/response.utils';
 
 /**
  * Controller for user management operations
@@ -29,40 +31,24 @@ export class UserController {
     const currentUser = req.user;
 
     if (!currentUser) {
-      throw new AppError('Authentication required', 401);
+      throw createError.authentication();
     }
 
     if (!id) {
-      throw new AppError('User ID is required', 400);
+      throw ErrorFactory.badRequest('User ID is required');
     }
 
-    try {
-      // Check if user is trying to access their own profile or is admin
-      if (currentUser.role !== 'ADMIN' && currentUser.userId !== id) {
-        throw new AppError(
-          'Access denied. You can only view your own profile.',
-          403
-        );
-      }
-
-      const user = await this.userService.findById(id);
-      if (!user) {
-        throw new AppError('User not found', 404);
-      }
-
-      const response: ApiResponse<UserResponse> = {
-        success: true,
-        message: 'User retrieved successfully',
-        data: user,
-      };
-
-      res.status(200).json(response);
-    } catch (error) {
-      if (error instanceof AppError) {
-        throw error;
-      }
-      throw new AppError('Failed to retrieve user', 500);
+    // Check if user is trying to access their own profile or is admin
+    if (currentUser.role !== 'ADMIN' && currentUser.userId !== id) {
+      throw createError.insufficientPermissions('view user profile');
     }
+
+    const user = await this.userService.findById(id);
+    if (!user) {
+      throw createError.userNotFound(id);
+    }
+
+    sendSuccess(res, user, 'User retrieved successfully');
   });
 
   /**

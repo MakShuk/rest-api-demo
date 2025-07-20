@@ -1,6 +1,81 @@
 import { Request, Response, NextFunction } from 'express';
-import { ApiError, ErrorResponse, AppError } from '../types/error.types';
+import {
+  ApiError,
+  ErrorResponse,
+  AppError,
+  DatabaseError,
+  NotFoundError,
+  ConflictError,
+} from '../types/error.types';
 import { config } from '../config/config';
+import { Prisma } from '@prisma/client';
+
+/**
+ * Handle Prisma database errors and convert them to AppError instances
+ */
+const handlePrismaError = (error: any): AppError => {
+  if (error instanceof Prisma.PrismaClientKnownRequestError) {
+    switch (error.code) {
+      case 'P2002':
+        // Unique constraint violation
+        const field = error.meta?.['target'] as string[] | undefined;
+        const fieldName = field ? field[0] : 'field';
+        return new ConflictError(
+          `${fieldName} already exists`,
+          'UNIQUE_CONSTRAINT_VIOLATION'
+        );
+
+      case 'P2025':
+        // Record not found
+        return new NotFoundError('Record not found', 'RECORD_NOT_FOUND');
+
+      case 'P2003':
+        // Foreign key constraint violation
+        return new ConflictError(
+          'Foreign key constraint violation',
+          'FOREIGN_KEY_CONSTRAINT'
+        );
+
+      case 'P2014':
+        // Required relation violation
+        return new ConflictError(
+          'Required relation violation',
+          'REQUIRED_RELATION_VIOLATION'
+        );
+
+      default:
+        return new DatabaseError(
+          `Database error: ${error.message}`,
+          'PRISMA_KNOWN_ERROR'
+        );
+    }
+  }
+
+  if (error instanceof Prisma.PrismaClientUnknownRequestError) {
+    return new DatabaseError(
+      'Unknown database error occurred',
+      'PRISMA_UNKNOWN_ERROR'
+    );
+  }
+
+  if (error instanceof Prisma.PrismaClientRustPanicError) {
+    return new DatabaseError('Database engine panic', 'PRISMA_PANIC_ERROR');
+  }
+
+  if (error instanceof Prisma.PrismaClientInitializationError) {
+    return new DatabaseError('Database connection failed', 'PRISMA_INIT_ERROR');
+  }
+
+  if (error instanceof Prisma.PrismaClientValidationError) {
+    return new DatabaseError(
+      'Database query validation failed',
+      'PRISMA_VALIDATION_ERROR'
+    );
+  }
+
+  // If it's not a Prisma error, return as is
+  return error;
+};
 
 /**
  * Global error handler middleware
@@ -12,27 +87,45 @@ export const errorHandler = (
   res: Response,
   _next: NextFunction
 ): void => {
+  // Handle Prisma errors first
+  let processedError = error;
+  if (!(error instanceof AppError)) {
+    processedError = handlePrismaError(error);
+  }
+
   // Log error details
   console.error('Error occurred:', {
-    message: error.message,
-    stack: error.stack,
+    message: processedError.message,
+    stack: processedError.stack,
     url: req.url,
     method: req.method,
     timestamp: new Date().toISOString(),
+    userAgent: req.get('User-Agent'),
+    ip: req.ip,
+    originalError: error.name,
   });
 
   // Default error values
   let statusCode = 500;
   let message = 'Internal Server Error';
+  let code: string | undefined;
+  let details: any;
 
   // Check if it's an operational error (AppError)
-  if (error instanceof AppError) {
-    statusCode = error.statusCode;
-    message = error.message;
-  } else if ('statusCode' in error && typeof error.statusCode === 'number') {
+  if (processedError instanceof AppError) {
+    statusCode = processedError.statusCode;
+    message = processedError.message;
+    code = processedError.code;
+    details = processedError.details;
+  } else if (
+    'statusCode' in processedError &&
+    typeof processedError.statusCode === 'number'
+  ) {
     // Handle other API errors
-    statusCode = error.statusCode;
-    message = error.message;
+    statusCode = processedError.statusCode;
+    message = processedError.message;
+    code = (processedError as ApiError).code;
+    details = (processedError as ApiError).details;
   }
 
   // Prepare error response
@@ -40,7 +133,19 @@ export const errorHandler = (
     success: false,
     message,
     timestamp: new Date().toISOString(),
+    path: req.originalUrl,
+    method: req.method,
   };
+
+  // Add error code if available
+  if (code) {
+    errorResponse.code = code;
+  }
+
+  // Add details if available
+  if (details) {
+    errorResponse.details = details;
+  }
 
   // Include error details in development
   if (config.nodeEnv === 'development') {
