@@ -2,7 +2,9 @@ import express from 'express';
 import cors from 'cors';
 import helmet from 'helmet';
 import rateLimit from 'express-rate-limit';
+import swaggerUi from 'swagger-ui-express';
 import { config } from './config/config';
+import { swaggerSpec } from './config/swagger.config';
 import {
   errorHandler,
   notFoundHandler,
@@ -80,6 +82,42 @@ app.use(
     limit: '10mb',
   })
 );
+
+// Swagger documentation
+if (config.nodeEnv !== 'production') {
+  // Swagger UI setup with custom options
+  const swaggerOptions = {
+    explorer: true,
+    swaggerOptions: {
+      docExpansion: 'none',
+      filter: true,
+      showRequestDuration: true,
+      tryItOutEnabled: true,
+      requestInterceptor: (req: any) => {
+        // Add any custom headers or modifications here
+        return req;
+      },
+    },
+    customCss: `
+      .swagger-ui .topbar { display: none }
+      .swagger-ui .info { margin: 20px 0 }
+      .swagger-ui .scheme-container { background: #fafafa; padding: 10px; border-radius: 4px; }
+    `,
+    customSiteTitle: 'REST API Documentation',
+  };
+
+  app.use(
+    '/api-docs',
+    swaggerUi.serve,
+    swaggerUi.setup(swaggerSpec, swaggerOptions)
+  );
+
+  // JSON endpoint for the OpenAPI spec
+  app.get('/api-docs.json', (_req, res) => {
+    res.setHeader('Content-Type', 'application/json');
+    res.send(swaggerSpec);
+  });
+}
 
 // Health check endpoint
 app.get('/health', (_req, res) => {
