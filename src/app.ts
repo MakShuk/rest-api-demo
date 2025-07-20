@@ -92,9 +92,11 @@ app.get('/health', (_req, res) => {
   });
 });
 
-// API routes will be added here
-// app.use('/api/auth', authRoutes);
-// app.use('/api/users', userRoutes);
+// API routes
+import { authRoutes, userRoutes } from './routes';
+
+app.use('/api/auth', authRoutes);
+app.use('/api/users', userRoutes);
 
 // 404 handler for undefined routes
 app.use(notFoundHandler);
