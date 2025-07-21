@@ -7,6 +7,12 @@ const server = app.listen(PORT, () => {
   console.log(`🚀 Server is running on port ${PORT}`);
   console.log(`📚 Environment: ${config.nodeEnv}`);
   console.log(`🔗 Health check: http://localhost:${PORT}/health`);
+
+  // Show Swagger documentation URL in development
+  if (config.nodeEnv !== 'production') {
+    console.log(`📖 API Documentation: http://localhost:${PORT}/api-docs`);
+    console.log(`📄 OpenAPI Spec: http://localhost:${PORT}/api-docs.json`);
+  }
 });
 
 // Graceful shutdown
