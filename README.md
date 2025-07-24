@@ -32,14 +32,14 @@ Before you begin, ensure you have the following installed:
 ### 1. Clone the Repository
 
 ```bash
-git clone <repository-url>
+git clone https://github.com/MakShuk/rest-api-demo
 cd rest-api
 ```
 
 ### 2. Install Dependencies
 
 ```bash
-npm install
+npm ci
 ```
 
 ### 3. Environment Configuration

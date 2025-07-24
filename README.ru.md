@@ -32,14 +32,14 @@
 ### 1. Клонирование репозитория
 
 ```bash
-git clone <repository-url>
+git clone https://github.com/MakShuk/rest-api-demo
 cd rest-api
 ```
 
 ### 2. Установка зависимостей
 
 ```bash
-npm install
+npm ci
 ```
 
 ### 3. Настройка окружения
