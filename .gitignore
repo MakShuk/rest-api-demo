@@ -6,7 +6,7 @@ yarn-debug.log*
 yarn-error.log*
 lerna-debug.log*
 .pnpm-debug.log*
-
+    
 
 # Diagnostic reports (https://nodejs.org/api/report.html)
 report.[0-9]*.[0-9]*.[0-9]*.[0-9]*.json
@@ -135,7 +135,7 @@ dist
 dist/
 build/
 lib/
-types/
+!src/types/  # исключение для src/types
 
 # Jest
 coverage/
@@ -357,3 +357,4 @@ runtime/
 /src/generated/prisma
 Современные практики REST API в 2025 году.md
 plan.md
+
