@@ -20,7 +20,7 @@ const router = Router();
  * @route   POST /auth/register
  * @desc    Register a new user
  * @access  Public
- * @body    { email, password, fullName, birthDate, role? }
+ * @body    { email, password, fullName, birthDate }
  */
 router.post(
   '/register',

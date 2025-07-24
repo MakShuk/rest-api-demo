@@ -161,7 +161,6 @@ export const validationSets = {
     validationRules.password,
     validationRules.fullName,
     validationRules.birthDate,
-    validationRules.role,
   ],
 
   // User login validation
@@ -226,7 +225,6 @@ export const validationSets = {
     validationRules.passwordConfirm,
     validationRules.fullName,
     validationRules.birthDate,
-    validationRules.role,
   ],
 
   // Bulk operations validation

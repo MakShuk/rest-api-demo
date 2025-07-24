@@ -144,12 +144,6 @@ const options: swaggerJsdoc.Options = {
                 'Пароль (минимум 8 символов, должен содержать буквы, цифры и спецсимволы)',
               example: 'Password123!',
             },
-            role: {
-              type: 'string',
-              enum: ['ADMIN', 'USER'],
-              description: 'Роль пользователя (опционально, по умолчанию USER)',
-              example: 'USER',
-            },
           },
           required: ['fullName', 'birthDate', 'email', 'password'],
         },
